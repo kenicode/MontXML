@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robô Fiscal Web Premium 🤖</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- SheetJS for Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <aside id="sidebar">
+        <div class="logo-container">
+            <i data-lucide="bot" style="color: var(--primary); width: 32px; height: 32px;"></i>
+            <span class="logo-text">ROBÔ FISCAL</span>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <i data-lucide="file-json-2"></i>
+                <span>Conversor XML</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="history"></i>
+                <span>Histórico</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="bar-chart-3"></i>
+                <span>Relatórios</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" class="nav-item">
+                <i data-lucide="settings"></i>
+                <span>Configurações</span>
+            </a>
+        </div>
+    </aside>
+
+    <main id="main-content">
+        <header id="top-bar">
+            <div class="header-title">Conversor de XML para Excel</div>
+            <div class="user-profile">
+                <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                <span>Administrador</span>
+                <span id="clock" style="margin-left: 10px; opacity: 0.6; font-size: 11px;"></span>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="card">
+                <!-- Control Panel (Always on Top) -->
+                <div class="control-grid">
+                    <!-- Left: Selecionar Arquivos (Square Area) -->
+                    <div id="drop-zone" class="drop-zone-square">
+                        <div class="drop-icon"><i data-lucide="upload-cloud"></i></div>
+                        <div class="drop-text">
+                            <span id="btn-select-text">Selecionar Arquivos</span>
+                            <p>ou arraste aqui</p>
+                        </div>
+                        <input type="file" id="file-input" multiple accept=".xml" style="display: none;">
+                    </div>
+
+                    <!-- Right: Action Stack -->
+                    <div class="action-stack">
+                        <button id="btn-process" class="btn-primary stack-btn" disabled>
+                            <i data-lucide="zap"></i>
+                            <span>CONVERTER AGORA</span>
+                        </button>
+                        <button id="btn-clear" class="btn-secondary stack-btn">
+                            <i data-lucide="trash-2"></i>
+                            <span>LIMPAR LISTA</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Duplicate Alert (Below controls) -->
+                <div id="duplicate-banner" class="alert-banner" style="display: none;">
+                    <div class="alert-content">
+                        <i data-lucide="alert-triangle"></i>
+                        <span id="duplicate-msg">Arquivos repetidos detectados</span>
+                    </div>
+                    <div class="alert-actions">
+                        <button id="btn-view-dupes" class="btn-text">Visualizar</button>
+                        <button id="btn-remove-dupes" class="btn-text danger">Remover Repetidos</button>
+                    </div>
+                </div>
+
+                <div id="process-info" style="display: none;">
+                    <div class="progress-bar-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                    <div id="status-text" style="font-size: 14px; text-align: center; color: var(--text-muted); font-weight: 500;">Aguardando processamento...</div>
+                </div>
+
+                <!-- Results/Files Section -->
+                <div id="results-area">
+                    <div id="file-summary" style="display: none; margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
+                            <h3 style="font-family: 'Outfit'; font-size: 15px;">Arquivos na Fila</h3>
+                            <span id="file-count" style="font-size: 11px; color: var(--text-muted);">0 arquivos</span>
+                        </div>
+                        <div id="file-list" class="file-list-compact"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i data-lucide="alert-circle" style="color: #ef4444; width: 48px; height: 48px;"></i>
+                <h2 style="font-family: 'Outfit'; margin-top: 15px;">Limpar Lista?</h2>
+            </div>
+            <p style="color: var(--text-muted); margin: 20px 0; line-height: 1.5;">Esta ação removerá todos os arquivos carregados. Deseja continuar?</p>
+            <div class="modal-footer">
+                <button id="btn-modal-cancel" class="btn-text" style="padding: 12px 24px;">Cancelar</button>
+                <button id="btn-modal-confirm" class="btn-primary" style="background: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="logic.js"></script>
+    <script>
+        // Init Lucide Icons
+        if (window.lucide) lucide.createIcons();
+        
+        // Simple Clock
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const clockEl = document.getElementById('clock');
+            if (clockEl) clockEl.textContent = time;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
